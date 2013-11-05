@@ -1,0 +1,24 @@
+#!/usr/bin/env ruby
+require 'benchmark'
+require 'fast_bitarray'
+require 'set'
+
+n = 5_000_000
+
+Benchmark.bmbm do |x|
+  x.report('FastBitarray') {
+    bitarray = FastBitarray.new(1)
+    n.times {|v| bitarray.set_bit(v) }
+  }
+
+  x.report('Hash') {
+    hash = Hash.new
+    n.times {|v| hash[v] = true }
+  }
+
+  x.report('Set')  {
+    set = Set.new
+    n.times {|v| set << v }
+  }
+end
+
