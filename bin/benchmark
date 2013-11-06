@@ -3,13 +3,12 @@ require 'benchmark'
 require 'fast_bitarray'
 require 'set'
 
-n = 5_000_000
+n = 1_000_000
+c = 10
 
+puts '### Set bit'
+puts
 Benchmark.bmbm do |x|
-  x.report('Empty loop') {
-    n.times {|v| }
-  }
-
   x.report('FastBitarray') {
     bitarray = FastBitarray.new(1)
     n.times {|v| bitarray.set_bit(v) }
@@ -23,6 +22,66 @@ Benchmark.bmbm do |x|
   x.report('Set')  {
     set = Set.new
     n.times {|v| set << v }
+  }
+end
+
+puts
+puts '### Union'
+Benchmark.bmbm do |x|
+  bitarray1 = FastBitarray.new(n)
+  bitarray2 = FastBitarray.new(n)
+  n.times {|v| bitarray1.set_bit(v); bitarray2.set_bit(v) }
+
+  x.report('FastBitarray') {
+    c.times {|v| bitarray1 + bitarray2 }
+  }
+
+  set1 = Set.new
+  set2 = Set.new
+  n.times {|v| set1 << v; set2 << v }
+
+  x.report('Set')  {
+    c.times {|v| set1 + set2 }
+  }
+end
+
+puts
+puts '### Intersect'
+Benchmark.bmbm do |x|
+  bitarray1 = FastBitarray.new(n)
+  bitarray2 = FastBitarray.new(n)
+  n.times {|v| bitarray1.set_bit(v); bitarray2.set_bit(v) }
+
+  x.report('FastBitarray') {
+    c.times {|v| bitarray1 & bitarray2 }
+  }
+
+  set1 = Set.new
+  set2 = Set.new
+  n.times {|v| set1 << v; set2 << v }
+
+  x.report('Set')  {
+    c.times {|v| set1 & set2 }
+  }
+end
+
+puts
+puts '### Difference'
+Benchmark.bmbm do |x|
+  bitarray1 = FastBitarray.new(n)
+  bitarray2 = FastBitarray.new(n)
+  n.times {|v| bitarray1.set_bit(v); bitarray2.set_bit(v) }
+
+  x.report('FastBitarray') {
+    c.times {|v| bitarray1 - bitarray2 }
+  }
+
+  set1 = Set.new
+  set2 = Set.new
+  n.times {|v| set1 << v; set2 << v }
+
+  x.report('Set')  {
+    c.times {|v| set1 - set2 }
   }
 end
 

@@ -67,4 +67,46 @@ describe FastBitarray do
     @bitarray.count.must_equal 1
   end
 
+  it 'can union FastBitarray-s' do
+    @bitarray.set_bit(1)
+
+    bitarray = FastBitarray.new(1)
+    bitarray.set_bit(1024)
+
+    result = @bitarray | bitarray
+    result.has_bit?(1).must_equal true
+    result.has_bit?(1024).must_equal true
+    result.count.must_equal 2
+  end
+
+  it 'can intersect FastBitarray-s' do
+    @bitarray.set_bit(1)
+    @bitarray.set_bit(2)
+
+    bitarray = FastBitarray.new(1)
+    bitarray.set_bit(1024)
+    bitarray.set_bit(2)
+
+    result = @bitarray & bitarray
+    result.has_bit?(1).must_equal false
+    result.has_bit?(1024).must_equal false
+    result.has_bit?(2).must_equal true
+    result.count.must_equal 1
+  end
+
+  it 'can subtract FastBitarray-s' do
+    @bitarray.set_bit(1)
+    @bitarray.set_bit(2)
+
+    bitarray = FastBitarray.new(1)
+    bitarray.set_bit(1024)
+    bitarray.set_bit(2)
+
+    result = @bitarray - bitarray
+    result.has_bit?(1).must_equal true
+    result.has_bit?(1024).must_equal false
+    result.has_bit?(2).must_equal false
+    result.count.must_equal 1
+  end
+
 end
