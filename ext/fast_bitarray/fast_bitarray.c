@@ -5,7 +5,7 @@
 
 const unsigned int UNSIGNED_INT_BITS = 8 * sizeof(unsigned int);
 
-ID CAPACITY_VARIABLE_NAME, DATA_VARIABLE_NAME, MIN_POSITION_VARIABLE_NAME, MAX_POSITION_VARIABLE_NAME;
+ID CAPACITY_VARIABLE_NAME, DATA_VARIABLE_NAME;
 VALUE cFastBitarray;
 
 static VALUE fast_bitarray_init(VALUE self, VALUE rb_capacity) {
@@ -16,8 +16,6 @@ static VALUE fast_bitarray_init(VALUE self, VALUE rb_capacity) {
 
   rb_ivar_set(self, CAPACITY_VARIABLE_NAME, rb_capacity);
   rb_ivar_set(self, DATA_VARIABLE_NAME, rb_str_new((const char *)data, capacity * sizeof(unsigned int)));
-  rb_ivar_set(self, MIN_POSITION_VARIABLE_NAME, INT2FIX(INT_MAX));
-  rb_ivar_set(self, MAX_POSITION_VARIABLE_NAME, INT2FIX(0));
 
   return self;
 }
@@ -45,25 +43,6 @@ static void fast_bitarray_increase_capacity(VALUE self, unsigned int required_ca
   rb_ivar_set(self, DATA_VARIABLE_NAME, rb_str_new((const char *)new_data, new_capacity * sizeof(unsigned int)));
 }
 
-static void fast_bitarray_update_range(VALUE self, unsigned int position) {
-  VALUE rb_min_position = rb_ivar_get(self, MIN_POSITION_VARIABLE_NAME);
-  VALUE rb_max_position = rb_ivar_get(self, MAX_POSITION_VARIABLE_NAME);
-
-  unsigned int min_position = FIX2INT(rb_min_position);
-  unsigned int max_position = FIX2INT(rb_max_position);
-
-  if (position < min_position) {
-    min_position = position;
-  }
-
-  if (position > max_position) {
-    max_position = position;
-  }
-
-  rb_ivar_set(self, MIN_POSITION_VARIABLE_NAME, INT2FIX(min_position));
-  rb_ivar_set(self, MAX_POSITION_VARIABLE_NAME, INT2FIX(max_position));
-}
-
 static VALUE fast_bitarray_set_bit(VALUE self, VALUE rb_bit_index) {
   if (!NIL_P(rb_bit_index) && FIXNUM_P(rb_bit_index)) {
     unsigned int bit_index = FIX2INT(rb_bit_index);
@@ -75,8 +54,6 @@ static VALUE fast_bitarray_set_bit(VALUE self, VALUE rb_bit_index) {
     if (quotient >= FIX2INT(rb_capacity)) {
       fast_bitarray_increase_capacity(self, quotient);
     }
-
-    fast_bitarray_update_range(self, quotient);
 
     VALUE rb_data = rb_ivar_get(self, DATA_VARIABLE_NAME);
     unsigned int *data = (unsigned int *)RSTRING_PTR(rb_data);
@@ -137,16 +114,7 @@ static VALUE fast_bitarray_count(VALUE self) {
 
   unsigned int result = 0;
 
-  VALUE rb_min_position = rb_ivar_get(self, MIN_POSITION_VARIABLE_NAME);
-  VALUE rb_max_position = rb_ivar_get(self, MAX_POSITION_VARIABLE_NAME);
-
-  unsigned int min_position = FIX2INT(rb_min_position);
-  unsigned int max_position = FIX2INT(rb_max_position);
-
-  unsigned int from = MAX(min_position, 0);
-  unsigned int to = MIN(max_position, (RSTRING_LEN(rb_data) / sizeof(unsigned int)));
-
-  for (unsigned int i = from; i <= to; i++) {
+  for (unsigned int i = 0; i < RSTRING_LEN(rb_data) / sizeof(unsigned int); i++) {
     unsigned int v = data[i];
 
     unsigned int c = ((v & 0xfff) * 0x1001001001001ULL & 0x84210842108421ULL) % 0x1f;
@@ -189,15 +157,6 @@ static VALUE fast_bitarray_union(VALUE self, VALUE rb_fast_bitarray) {
     }
   }
 
-  unsigned int own_min_position = FIX2INT(rb_ivar_get(self, MIN_POSITION_VARIABLE_NAME));
-  unsigned int own_max_position = FIX2INT(rb_ivar_get(self, MAX_POSITION_VARIABLE_NAME));
-
-  unsigned int arg_min_position = FIX2INT(rb_ivar_get(rb_fast_bitarray, MIN_POSITION_VARIABLE_NAME));
-  unsigned int arg_max_position = FIX2INT(rb_ivar_get(rb_fast_bitarray, MAX_POSITION_VARIABLE_NAME));
-
-  rb_ivar_set(result, MIN_POSITION_VARIABLE_NAME, INT2FIX(MIN(own_min_position, arg_min_position)));
-  rb_ivar_set(result, MAX_POSITION_VARIABLE_NAME, INT2FIX(MAX(own_max_position, arg_max_position)));
-
   return result;
 }
 
@@ -224,15 +183,6 @@ static VALUE fast_bitarray_intersection(VALUE self, VALUE rb_fast_bitarray) {
   for (unsigned int i = MIN(own_capacity, arg_capacity); i < MAX(own_capacity, arg_capacity); i++) {
     result_data[i] = 0;
   }
-
-  unsigned int own_min_position = FIX2INT(rb_ivar_get(self, MIN_POSITION_VARIABLE_NAME));
-  unsigned int own_max_position = FIX2INT(rb_ivar_get(self, MAX_POSITION_VARIABLE_NAME));
-
-  unsigned int arg_min_position = FIX2INT(rb_ivar_get(rb_fast_bitarray, MIN_POSITION_VARIABLE_NAME));
-  unsigned int arg_max_position = FIX2INT(rb_ivar_get(rb_fast_bitarray, MAX_POSITION_VARIABLE_NAME));
-
-  rb_ivar_set(result, MIN_POSITION_VARIABLE_NAME, INT2FIX(MIN(own_min_position, arg_min_position)));
-  rb_ivar_set(result, MAX_POSITION_VARIABLE_NAME, INT2FIX(MAX(own_max_position, arg_max_position)));
 
   return result;
 }
@@ -267,15 +217,6 @@ static VALUE fast_bitarray_difference(VALUE self, VALUE rb_fast_bitarray) {
     }
   }
 
-  unsigned int own_min_position = FIX2INT(rb_ivar_get(self, MIN_POSITION_VARIABLE_NAME));
-  unsigned int own_max_position = FIX2INT(rb_ivar_get(self, MAX_POSITION_VARIABLE_NAME));
-
-  unsigned int arg_min_position = FIX2INT(rb_ivar_get(rb_fast_bitarray, MIN_POSITION_VARIABLE_NAME));
-  unsigned int arg_max_position = FIX2INT(rb_ivar_get(rb_fast_bitarray, MAX_POSITION_VARIABLE_NAME));
-
-  rb_ivar_set(result, MIN_POSITION_VARIABLE_NAME, INT2FIX(MIN(own_min_position, arg_min_position)));
-  rb_ivar_set(result, MAX_POSITION_VARIABLE_NAME, INT2FIX(MAX(own_max_position, arg_max_position)));
-
   return result;
 }
 
@@ -284,8 +225,6 @@ static VALUE fast_bitarray_difference(VALUE self, VALUE rb_fast_bitarray) {
 void Init_fast_bitarray(void) {
   DATA_VARIABLE_NAME = rb_intern("data");
   CAPACITY_VARIABLE_NAME = rb_intern("capacity");
-  MIN_POSITION_VARIABLE_NAME = rb_intern("min_position");
-  MAX_POSITION_VARIABLE_NAME = rb_intern("max_position");
 
   cFastBitarray = rb_define_class("FastBitarray", rb_cObject);
 
