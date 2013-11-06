@@ -32,7 +32,7 @@ static void fast_bitarray_increase_capacity(VALUE self, unsigned int required_ca
   unsigned int *data = (unsigned int *)RSTRING_PTR(rb_data);
 
   unsigned int new_capacity = capacity;
-  while (new_capacity <= required_capacity) {
+  while (new_capacity < required_capacity) {
     new_capacity = 2 * new_capacity;
   }
 
@@ -50,9 +50,8 @@ static VALUE fast_bitarray_set_bit(VALUE self, VALUE rb_bit_index) {
     unsigned int quotient = bit_index / UNSIGNED_INT_BITS;
     unsigned int modulus = bit_index % UNSIGNED_INT_BITS;
 
-    VALUE rb_capacity = rb_ivar_get(self, CAPACITY_VARIABLE_NAME);
-    if (quotient >= FIX2INT(rb_capacity)) {
-      fast_bitarray_increase_capacity(self, quotient);
+    if (quotient + 1 > FIX2INT(rb_ivar_get(self, CAPACITY_VARIABLE_NAME))) {
+      fast_bitarray_increase_capacity(self, quotient + 1);
     }
 
     VALUE rb_data = rb_ivar_get(self, DATA_VARIABLE_NAME);
