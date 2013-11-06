@@ -6,6 +6,10 @@ require 'set'
 n = 5_000_000
 
 Benchmark.bmbm do |x|
+  x.report('Empty loop') {
+    n.times {|v| }
+  }
+
   x.report('FastBitarray') {
     bitarray = FastBitarray.new(1)
     n.times {|v| bitarray.set_bit(v) }
