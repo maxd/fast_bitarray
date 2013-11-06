@@ -44,6 +44,7 @@ bitarray1 - bitarray2           # Difference
 ## Benchmark
 
 **FastBitarray in 4X times faster than Hash and Set on set operations.**
+
 **FastBitarray in 64X times faster than Set on union, intersect and difference operations.**
 
 ~~~
