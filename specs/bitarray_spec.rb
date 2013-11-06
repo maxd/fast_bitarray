@@ -109,4 +109,11 @@ describe FastBitarray do
     result.count.must_equal 1
   end
 
+  it 'can return array of setted bits' do
+    @bitarray.set_bit(1)
+    @bitarray.set_bit(1024)
+
+    @bitarray.to_a.must_equal [1, 1024]
+  end
+
 end

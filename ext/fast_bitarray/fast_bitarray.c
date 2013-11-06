@@ -124,6 +124,27 @@ static VALUE fast_bitarray_count(VALUE self) {
   return INT2FIX(result);
 }
 
+static VALUE fast_bitarray_to_a(VALUE self) {
+  unsigned int capacity = FIX2INT(rb_ivar_get(self, CAPACITY_VARIABLE_NAME));
+  unsigned int *data = (unsigned int *)RSTRING_PTR(rb_ivar_get(self, DATA_VARIABLE_NAME));
+
+  VALUE result = rb_ary_new();
+
+  for (unsigned int i = 0; i < capacity; i++) {
+    unsigned int v = data[i];
+
+    unsigned int mask = 1;
+    for(unsigned int b = 0; b < UNSIGNED_INT_BITS; b++) {
+      if (v & mask) {
+        rb_ary_push(result, INT2FIX(UNSIGNED_INT_BITS * i + b));
+      }
+      mask = mask << 1;
+    }
+  }
+
+  return result;
+}
+
 static VALUE fast_bitarray_union(VALUE self, VALUE rb_fast_bitarray) {
   Check_Type(rb_fast_bitarray, T_OBJECT);
   if (!RTEST(rb_obj_is_instance_of(rb_fast_bitarray, cFastBitarray))) {
@@ -226,6 +247,7 @@ void Init_fast_bitarray(void) {
   rb_define_method(cFastBitarray, "has_bit?", fast_bitarray_has_bit, 1);
 
   rb_define_method(cFastBitarray, "count", fast_bitarray_count, 0);
+  rb_define_method(cFastBitarray, "to_a", fast_bitarray_to_a, 0);
 
   rb_define_method(cFastBitarray, "|", fast_bitarray_union, 1);
   rb_define_method(cFastBitarray, "+", fast_bitarray_union, 1);
