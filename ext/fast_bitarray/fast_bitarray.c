@@ -25,11 +25,8 @@ static VALUE fast_bitarray_capacity(VALUE self) {
 }
 
 static void fast_bitarray_increase_capacity(VALUE self, unsigned int required_capacity) {
-  VALUE rb_capacity = rb_ivar_get(self, CAPACITY_VARIABLE_NAME);
-  unsigned int capacity = FIX2INT(rb_capacity);
-
-  VALUE rb_data = rb_ivar_get(self, DATA_VARIABLE_NAME);
-  unsigned int *data = (unsigned int *)RSTRING_PTR(rb_data);
+  unsigned int capacity = FIX2INT(rb_ivar_get(self, CAPACITY_VARIABLE_NAME));
+  unsigned int *data = (unsigned int *)RSTRING_PTR(rb_ivar_get(self, DATA_VARIABLE_NAME));
 
   unsigned int new_capacity = capacity;
   while (new_capacity < required_capacity) {
@@ -37,7 +34,7 @@ static void fast_bitarray_increase_capacity(VALUE self, unsigned int required_ca
   }
 
   unsigned int *new_data = MEMZERO(ALLOC_N(unsigned int, new_capacity), unsigned int, new_capacity);
-  MEMCPY(data, new_data, unsigned int, capacity);
+  MEMCPY(new_data, data, unsigned int, capacity);
 
   rb_ivar_set(self, CAPACITY_VARIABLE_NAME, INT2FIX(new_capacity));
   rb_ivar_set(self, DATA_VARIABLE_NAME, rb_str_new((const char *)new_data, new_capacity * sizeof(unsigned int)));
