@@ -180,10 +180,6 @@ static VALUE fast_bitarray_intersection(VALUE self, VALUE rb_fast_bitarray) {
     result_data[i] = own_data[i] & arg_data[i];
   }
 
-  for (unsigned int i = MIN(own_capacity, arg_capacity); i < MAX(own_capacity, arg_capacity); i++) {
-    result_data[i] = 0;
-  }
-
   return result;
 }
 
