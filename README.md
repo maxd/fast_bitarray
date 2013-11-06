@@ -29,6 +29,16 @@ bitarray.set_bit(43)
 bitarray.reset_bit(42)          # Reset bit
 
 bitarray.count                  # Count of set bits ==> 1
+
+...
+
+bitarray1 = FastBitarray.new(1)
+bitarray2 = FastBitarray.new(1)
+
+bitarray1 + bitarray2           # Union
+bitarray1 & bitarray2           # Intersection
+bitarray1 - bitarray2           # Difference
+
 ~~~
 
 ## Benchmark
