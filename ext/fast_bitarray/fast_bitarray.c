@@ -44,48 +44,49 @@ static void fast_bitarray_increase_capacity(VALUE self, unsigned int required_ca
 }
 
 static VALUE fast_bitarray_set_bit(VALUE self, VALUE rb_bit_index) {
-  if (!NIL_P(rb_bit_index) && FIXNUM_P(rb_bit_index)) {
-    unsigned int bit_index = FIX2INT(rb_bit_index);
-
-    unsigned int quotient = bit_index / UNSIGNED_INT_BITS;
-    unsigned int modulus = bit_index % UNSIGNED_INT_BITS;
-
-    if (quotient + 1 > FIX2INT(rb_ivar_get(self, CAPACITY_VARIABLE_NAME))) {
-      fast_bitarray_increase_capacity(self, quotient + 1);
-    }
-
-    VALUE rb_data = rb_ivar_get(self, DATA_VARIABLE_NAME);
-    unsigned int *data = (unsigned int *)RSTRING_PTR(rb_data);
-    data[quotient] = data[quotient] | (1 << modulus);
-
-    return Qtrue;
-  } else {
-    return Qfalse;
+  if (NIL_P(rb_bit_index) || !FIXNUM_P(rb_bit_index)) {
+    rb_raise(rb_eArgError, "Bit index must be a number");
   }
+
+  unsigned int bit_index = FIX2INT(rb_bit_index);
+
+  unsigned int quotient = bit_index / UNSIGNED_INT_BITS;
+  unsigned int modulus = bit_index % UNSIGNED_INT_BITS;
+
+  if (quotient + 1 > FIX2INT(rb_ivar_get(self, CAPACITY_VARIABLE_NAME))) {
+    fast_bitarray_increase_capacity(self, quotient + 1);
+  }
+
+  unsigned int *data = (unsigned int *)RSTRING_PTR(rb_ivar_get(self, DATA_VARIABLE_NAME));
+  data[quotient] = data[quotient] | (1 << modulus);
+
+  return Qtrue;
 }
 
 static VALUE fast_bitarray_reset_bit(VALUE self, VALUE rb_bit_index) {
-  if (!NIL_P(rb_bit_index) && FIXNUM_P(rb_bit_index)) {
-    unsigned int bit_index = FIX2INT(rb_bit_index);
-
-    unsigned int quotient = bit_index / UNSIGNED_INT_BITS;
-    unsigned int modulus = bit_index % UNSIGNED_INT_BITS;
-
-    VALUE rb_capacity = rb_ivar_get(self, CAPACITY_VARIABLE_NAME);
-    if (quotient < FIX2INT(rb_capacity)) {
-      VALUE rb_data = rb_ivar_get(self, DATA_VARIABLE_NAME);
-      unsigned int *data = (unsigned int *)RSTRING_PTR(rb_data);
-      data[quotient] = data[quotient] & ~(1 << modulus);
-    }
-
-    return Qtrue;
-  } else {
-    return Qfalse;
+  if (NIL_P(rb_bit_index) || !FIXNUM_P(rb_bit_index)) {
+    rb_raise(rb_eArgError, "Bit index must be a number");
   }
+
+  unsigned int bit_index = FIX2INT(rb_bit_index);
+
+  unsigned int quotient = bit_index / UNSIGNED_INT_BITS;
+  unsigned int modulus = bit_index % UNSIGNED_INT_BITS;
+
+  VALUE rb_capacity = rb_ivar_get(self, CAPACITY_VARIABLE_NAME);
+  if (quotient < FIX2INT(rb_capacity)) {
+    VALUE rb_data = rb_ivar_get(self, DATA_VARIABLE_NAME);
+    unsigned int *data = (unsigned int *)RSTRING_PTR(rb_data);
+    data[quotient] = data[quotient] & ~(1 << modulus);
+  }
+
+  return Qtrue;
 }
 
 static VALUE fast_bitarray_has_bit(VALUE self, VALUE rb_bit_index) {
-  Check_Type(rb_bit_index, T_FIXNUM);
+  if (NIL_P(rb_bit_index) || !FIXNUM_P(rb_bit_index)) {
+    rb_raise(rb_eArgError, "Bit index must be a number");
+  }
 
   unsigned int bit_index = FIX2INT(rb_bit_index);
 
