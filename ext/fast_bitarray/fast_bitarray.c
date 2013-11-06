@@ -109,12 +109,12 @@ static VALUE fast_bitarray_has_bit(VALUE self, VALUE rb_bit_index) {
 }
 
 static VALUE fast_bitarray_count(VALUE self) {
-  VALUE rb_data = rb_ivar_get(self, DATA_VARIABLE_NAME);
-  unsigned int *data = (unsigned int *)RSTRING_PTR(rb_data);
+  unsigned int capacity = FIX2INT(rb_ivar_get(self, CAPACITY_VARIABLE_NAME));
+  unsigned int *data = (unsigned int *)RSTRING_PTR(rb_ivar_get(self, DATA_VARIABLE_NAME));
 
   unsigned int result = 0;
 
-  for (unsigned int i = 0; i < RSTRING_LEN(rb_data) / sizeof(unsigned int); i++) {
+  for (unsigned int i = 0; i < capacity; i++) {
     unsigned int v = data[i];
 
     unsigned int c = ((v & 0xfff) * 0x1001001001001ULL & 0x84210842108421ULL) % 0x1f;
@@ -210,10 +210,6 @@ static VALUE fast_bitarray_difference(VALUE self, VALUE rb_fast_bitarray) {
   if (own_capacity > arg_capacity) {
     for (unsigned int i = arg_capacity; i < own_capacity; i++) {
       result_data[i] = own_data[i];
-    }
-  } else if (arg_capacity > own_capacity) {
-    for (unsigned int i = own_capacity; i < arg_capacity; i++) {
-      result_data[i] = 0;
     }
   }
 
