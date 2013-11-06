@@ -111,7 +111,8 @@ static VALUE fast_bitarray_count(VALUE self) {
 
   unsigned int result = 0;
 
-  for (unsigned int i = 0; i < capacity; i++) {
+  unsigned int i;
+  for (i = 0; i < capacity; i++) {
     unsigned int v = data[i];
 
     unsigned int c = ((v & 0xfff) * 0x1001001001001ULL & 0x84210842108421ULL) % 0x1f;
@@ -130,11 +131,13 @@ static VALUE fast_bitarray_to_a(VALUE self) {
 
   VALUE result = rb_ary_new();
 
-  for (unsigned int i = 0; i < capacity; i++) {
+  unsigned int i;
+  for (i = 0; i < capacity; i++) {
     unsigned int v = data[i];
 
     unsigned int mask = 1;
-    for(unsigned int b = 0; b < UNSIGNED_INT_BITS; b++) {
+    unsigned int b;
+    for(b = 0; b < UNSIGNED_INT_BITS; b++) {
       if (v & mask) {
         rb_ary_push(result, INT2FIX(UNSIGNED_INT_BITS * i + b));
       }
@@ -161,16 +164,17 @@ static VALUE fast_bitarray_union(VALUE self, VALUE rb_fast_bitarray) {
   unsigned int *arg_data = (unsigned int *)RSTRING_PTR(rb_ivar_get(rb_fast_bitarray, DATA_VARIABLE_NAME));
   unsigned int *result_data = (unsigned int *)RSTRING_PTR(rb_ivar_get(result, DATA_VARIABLE_NAME));
 
-  for (unsigned int i = 0; i < MIN(own_capacity, arg_capacity); i++) {
+  unsigned int i;
+  for (i = 0; i < MIN(own_capacity, arg_capacity); i++) {
     result_data[i] = own_data[i] | arg_data[i];
   }
 
   if (own_capacity > arg_capacity) {
-    for (unsigned int i = arg_capacity; i < own_capacity; i++) {
+    for (i = arg_capacity; i < own_capacity; i++) {
       result_data[i] = own_data[i];
     }
   } else if (arg_capacity > own_capacity) {
-    for (unsigned int i = own_capacity; i < arg_capacity; i++) {
+    for (i = own_capacity; i < arg_capacity; i++) {
       result_data[i] = arg_data[i];
     }
   }
@@ -194,7 +198,8 @@ static VALUE fast_bitarray_intersection(VALUE self, VALUE rb_fast_bitarray) {
   unsigned int *arg_data = (unsigned int *)RSTRING_PTR(rb_ivar_get(rb_fast_bitarray, DATA_VARIABLE_NAME));
   unsigned int *result_data = (unsigned int *)RSTRING_PTR(rb_ivar_get(result, DATA_VARIABLE_NAME));
 
-  for (unsigned int i = 0; i < MIN(own_capacity, arg_capacity); i++) {
+  unsigned int i;
+  for (i = 0; i < MIN(own_capacity, arg_capacity); i++) {
     result_data[i] = own_data[i] & arg_data[i];
   }
 
@@ -217,12 +222,14 @@ static VALUE fast_bitarray_difference(VALUE self, VALUE rb_fast_bitarray) {
   unsigned int *arg_data = (unsigned int *)RSTRING_PTR(rb_ivar_get(rb_fast_bitarray, DATA_VARIABLE_NAME));
   unsigned int *result_data = (unsigned int *)RSTRING_PTR(rb_ivar_get(result, DATA_VARIABLE_NAME));
 
-  for (unsigned int i = 0; i < MIN(own_capacity, arg_capacity); i++) {
+  unsigned int i;
+  for (i = 0; i < MIN(own_capacity, arg_capacity); i++) {
     result_data[i] = own_data[i] & ~arg_data[i];
   }
 
   if (own_capacity > arg_capacity) {
-    for (unsigned int i = arg_capacity; i < own_capacity; i++) {
+    unsigned int i;
+    for (i = arg_capacity; i < own_capacity; i++) {
       result_data[i] = own_data[i];
     }
   }
