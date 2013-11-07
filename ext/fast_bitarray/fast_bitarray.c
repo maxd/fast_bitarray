@@ -90,8 +90,7 @@ static VALUE fast_bitarray_has_bit(VALUE self, VALUE rb_bit_index) {
   unsigned int quotient = bit_index / UNSIGNED_INT_BITS;
   unsigned int modulus = bit_index % UNSIGNED_INT_BITS;
 
-  VALUE rb_capacity = rb_ivar_get(self, CAPACITY_VARIABLE_NAME);
-  if (quotient < FIX2INT(rb_capacity)) {
+  if (quotient < FIX2INT(rb_ivar_get(self, CAPACITY_VARIABLE_NAME))) {
     VALUE rb_data = rb_ivar_get(self, DATA_VARIABLE_NAME);
     unsigned int *data = (unsigned int *)RSTRING_PTR(rb_data);
 
