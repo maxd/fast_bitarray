@@ -1,4 +1,4 @@
-# FastBitarray
+# FastBitarray [![Build Status](https://travis-ci.org/maxd/fast_bitarray.png)](https://travis-ci.org/maxd/fast_bitarray)
 
 Fast implementation of BitArray for Ruby (base on C extension).
 
